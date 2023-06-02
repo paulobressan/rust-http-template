@@ -1,0 +1,95 @@
+name: Docker
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ---> SET HERE ARN ROLE AWS OIDC <---
+          aws-region: ---> SET HERE AWS ECR REGION <---
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ github.event.repository.name }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          echo "$REGISTRY/$REPOSITORY:$IMAGE_TAG" > image.txt
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: Upload build result
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: image.txt
+  hml:
+    runs-on: ubuntu-latest
+    needs: "build"
+    steps:
+      - name: Checkout Manifest
+        uses: actions/checkout@v3
+        with:
+          repository: ---> SET HERE K8S MANIFESTS REPO TO BUMP VERSION. EX  my-account-or-organization/apps-k8s-manifest <--- 
+          ref: hml
+          token: ${{ secrets.BUMP_VERSION_TOKEN }}
+
+      - name: Download build result
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+
+      - name: "Setup Kustomize"
+        uses: imranismail/setup-kustomize@v2
+
+      - run: |
+          image=`cat image.txt`
+          cd ${{ github.event.repository.name }}
+          kustomize edit set image app-image=$image
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit -am "Bump ${{ github.event.repository.name }} version"
+          git push
+  prd:
+    runs-on: ubuntu-latest
+    needs: "hml"
+    steps:
+      - name: Checkout Manifest
+        uses: actions/checkout@v3
+        with:
+          repository: ---> SET HERE K8S MANIFESTS REPO TO BUMP VERSION. EX  my-account-or-organization/apps-k8s-manifest <--- 
+          ref: prd
+          token: ${{ secrets.BUMP_VERSION_TOKEN }}
+
+      - name: Download build result
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+
+      - name: "Setup Kustomize"
+        uses: imranismail/setup-kustomize@v2
+
+      - run: |
+          image=`cat image.txt`
+          cd ${{ github.event.repository.name }}
+          kustomize edit set image app-image=$image
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit -am "Bump ${{ github.event.repository.name }} version"
+          git push

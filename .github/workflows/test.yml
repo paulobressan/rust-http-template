@@ -1,0 +1,64 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgresql:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      rabbitmq:
+        image: rabbitmq:3-management
+        env:
+          RABBITMQ_DEFAULT_USER: rabbitmq
+          RABBITMQ_DEFAULT_PASS: rabbitmq
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test
+        run: cargo test
+        env:
+          ADDR: 0.0.0.0:5000
+          RUST_LOG: debug
+          RUST_BACKTRACE: full
+          PAGE_SIZE_MAX: 48
+          PAGE_SIZE_DEFAULT: 24
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres
+          DATABASE_NAME: postgres_test
+          DATABASE_HOST: localhost
+          DATABASE_POOL_MAX: 16
+          AMQP_ADDR: "amqp://rabbitmq:rabbitmq@localhost:5672"
+          REDIS_URL: redis://localhost/
+          
