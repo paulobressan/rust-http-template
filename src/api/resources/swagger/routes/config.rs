@@ -18,10 +18,8 @@ async fn redirect() -> impl Responder {
 
 pub fn swagger() -> SwaggerUi {
     let mut doc = ApiDoc::openapi();
-    doc.info.title = String::from("Inventories API");
-    doc.info.description = Some(String::from(
-        "Application responsible for the inventory of the game and players",
-    ));
+    doc.info.title = String::from("API Template");
+    doc.info.description = Some(String::from("Rust API Template using PostgreSQL, Redis, and RabbitMQ. The following template provides a basic structure for developing a Rust API, utilizing the powerful combination of PostgreSQL as a database, Redis as a caching system, and RabbitMQ for asynchronous communication. These technologies offer a comprehensive set of features that can be leveraged to build an efficient and scalable API in Rust."));
 
     SwaggerUi::new("/docs/{_:.*}").url("/api-doc/openapi.json", doc)
 }
