@@ -11,7 +11,7 @@ impl CategoryCreateModel {
     pub fn new(name: String, description: Option<String>) -> Self {
         Self {
             id: Uuid::new_v4(),
-            name: name.clone(),
+            name,
             description,
         }
     }
@@ -36,7 +36,7 @@ pub struct CategoryUpdateModel {
 impl CategoryUpdateModel {
     pub fn new(name: String, description: Option<String>) -> Self {
         Self {
-            name: name.clone(),
+            name,
             description,
         }
     }
