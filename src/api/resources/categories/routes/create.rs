@@ -24,8 +24,6 @@ use crate::{
     responses(
          (status = 201, description = "category created",  body = ApiResponseCategory),
          (status = 400, description = "Invalid payload",  body = ErrorResponse),
-         (status = 404, description = "Category not found",  body = ErrorResponse),
-         (status = 409, description = "An categories with that name already exists",  body = ErrorResponse),
     ),
  )]
 #[post("/categories")]

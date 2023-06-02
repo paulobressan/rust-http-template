@@ -28,7 +28,6 @@ use crate::{
          (status = 200, description = "Category updated",  body = ApiResponseCategory),
          (status = 400, description = "Invalid payload",  body = ErrorResponse),
          (status = 404, description = "Category not found",  body = ErrorResponse),
-         (status = 409, description = "An category with that name already exists",  body = ErrorResponse),
     ),
  )]
 #[put("/categories/{category_id}")]
