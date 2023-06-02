@@ -48,3 +48,9 @@ impl From<validator::ValidationErrors> for DomainError {
         DomainError::BadRequest(value.to_string())
     }
 }
+
+impl From<lapin::Error> for DomainError {
+    fn from(value: lapin::Error) -> Self {
+        DomainError::InternalServerError(value.to_string())
+    }
+}
