@@ -4,8 +4,23 @@ use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(OpenApi)]
 #[openapi(
-    paths(crate::api::resources::health::routes::check::handler,),
-    components(schemas(crate::api::error::ErrorResponse, crate::api::utils::response::Meta,))
+    paths(
+        crate::api::resources::health::routes::check::handler,
+        //Category
+        crate::api::resources::categories::routes::create::handler,
+        crate::api::resources::categories::routes::update_by_id::handler,
+        crate::api::resources::categories::routes::find_by_id::handler,
+        crate::api::resources::categories::routes::find::handler,
+        crate::api::resources::categories::routes::delete_by_id::handler,
+    ),
+    components(schemas(
+        crate::api::error::ErrorResponse, crate::api::utils::response::Meta,
+        //Category
+        crate::api::utils::response::ApiResponseCategory,
+        crate::api::resources::categories::dto::ResponseCategory,
+        crate::api::resources::categories::dto::RequestCreateCategory,
+        crate::api::resources::categories::dto::RequestUpdateCategory,
+    ))
 )]
 struct ApiDoc;
 
@@ -18,7 +33,7 @@ async fn redirect() -> impl Responder {
 
 pub fn swagger() -> SwaggerUi {
     let mut doc = ApiDoc::openapi();
-    doc.info.title = String::from("API Template");
+    doc.info.title = String::from("Rust API Template");
     doc.info.description = Some(String::from("Rust API Template using PostgreSQL, Redis, and RabbitMQ. The following template provides a basic structure for developing a Rust API, utilizing the powerful combination of PostgreSQL as a database, Redis as a caching system, and RabbitMQ for asynchronous communication. These technologies offer a comprehensive set of features that can be leveraged to build an efficient and scalable API in Rust."));
 
     SwaggerUi::new("/docs/{_:.*}").url("/api-doc/openapi.json", doc)

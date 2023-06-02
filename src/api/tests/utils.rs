@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use crate::{
-    api::{config, error::ErrorResponse, lib::AppState, middleware},
+    api::{error::ErrorResponse, lib::AppState, middleware},
     repository::{
+        categories::PgCategoryRepository,
         health::PgHealthRepository,
         postgres::{self, init_to_tests},
         redis,
@@ -38,12 +39,19 @@ async fn setup() {
 
 pub struct Repositories {
     pub health_repository: Arc<PgHealthRepository>,
+    pub category_repository: Arc<PgCategoryRepository>,
 }
 
 impl Repositories {
     #[allow(clippy::too_many_arguments)]
-    pub fn new(health_repository: Arc<PgHealthRepository>) -> Self {
-        Self { health_repository }
+    pub fn new(
+        health_repository: Arc<PgHealthRepository>,
+        category_repository: Arc<PgCategoryRepository>,
+    ) -> Self {
+        Self {
+            health_repository,
+            category_repository,
+        }
     }
 }
 
@@ -51,6 +59,7 @@ impl AppState {
     fn mock_default(repositories: &Repositories) -> Data<Self> {
         Data::new(Self {
             health_repository: repositories.health_repository.clone(),
+            category_repository: repositories.category_repository.clone(),
         })
     }
 }
@@ -88,8 +97,9 @@ where
     let redis_client = Arc::new(redis::init());
 
     let health_repository = Arc::new(PgHealthRepository::new(pool.clone(), redis_client.clone()));
+    let category_repository = Arc::new(PgCategoryRepository::new(pool.clone()));
 
-    let repositories = Repositories::new(health_repository);
+    let repositories = Repositories::new(health_repository, category_repository);
 
     let app_state = AppState::mock_default(&repositories);
 

@@ -4,21 +4,13 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum DomainError {
     #[error("{}", _0)]
-    Forbidden(String),
-    #[error("{}", _0)]
     NotFound(String),
-    #[error("{}", _0)]
-    Conflict(String),
+
     #[error("{}", _0)]
     BadRequest(String),
-    #[error("{}", _0)]
-    PreconditionFailed(String),
-    #[error("{}", _0)]
-    PreconditionRequired(String),
+
     #[error("{}", _0)]
     InternalServerError(String),
-    #[error("{}", _0)]
-    NotAcceptable(String),
 }
 
 impl From<tokio_postgres::Error> for DomainError {
