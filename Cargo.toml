@@ -40,3 +40,11 @@ futures = "0.3.28"
 [dev-dependencies]
 mockall = "0.11.3"
 tokio = { version = "1", features = ["macros"] }
+
+[[bin]]
+name = "api"
+path = "src/main.rs"
+
+[profile.release]
+codegen-units = 1
+lto = true
